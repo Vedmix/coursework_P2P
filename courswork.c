@@ -3,44 +3,48 @@
 #include <string.h>
 
 // Structure for a book
-typedef struct {
-    char *title;
-    char *author;
-    int yearPublished;
-    int pageCount;
-    float price;
-    float rating;
-    int *readerAges;
-    int readerCount;
-} BOOK;
+typedef struct Building{
+    int id;
+    char *street;
+    char *devCompany;
+    int yearConstruction;
+    int numHouse;
+    int floors;
+    float height;
+    float energyEfficiency;
+    int amountApartments;
+    float *apartmentPrices;
+}Building;
 
 // Structure for a node in the linked list
 typedef struct Node {
-    BOOK book;
+    Building building;
     struct Node* next;
-} Node;
+}Node;
 
 // Function to create a new node
-Node* create_node(BOOK book) {
+Node* create_node(Building building) {
     Node* new_node = (Node*)malloc(sizeof(Node));
     int success = (new_node != NULL);
-    if (success) {
-        new_node->book = book;
+    if(success){
+        new_node->building = building;
         new_node->next = NULL;
-    } else {
+    } 
+    else{
         printf("Memory allocation error!\n");
     }
     return new_node;
 }
 
 // Function to append a book to the end of the list
-void append(Node** head, BOOK book) {
-    Node* new_node = create_node(book);
+void append(Node** head, Building building) {
+    Node* new_node = create_node(building);
     Node* current = *head;
-    if (*head == NULL) {
+    if(*head == NULL){
         *head = new_node;
-    } else {
-        while (current->next != NULL) {
+    }
+    else{
+        while(current->next != NULL){
             current = current->next;
         }
         current->next = new_node;
@@ -48,60 +52,35 @@ void append(Node** head, BOOK book) {
 }
 
 // Function to calculate the length of the list
-int length(Node* head) {
+int length(Node* head){
     int count = 0;
     Node* current = head;
-    while (current != NULL) {
+    while(current != NULL){
         count++;
         current = current->next;
     }
     return count;
 }
 
-// Function to remove an element by its position from the end
-void remove_from_end(Node** head, int position_from_end) {
-    int len = length(*head);
-    int position_from_start = len - position_from_end;
-    Node* temp = NULL;
-    Node* current = *head;
-
-    if (*head != NULL) {
-        if (position_from_end > len || position_from_start == 0) {
-            temp = *head;
-            *head = (*head)->next;
-        } else {
-            for (int i = 0; i < position_from_start - 1; i++) {
-                current = current->next;
-            }
-            temp = current->next;
-            current->next = temp->next;
-        }
-        
-        if (temp != NULL) {
-            free(temp->book.title);
-            free(temp->book.author);
-            free(temp->book.readerAges);
-            free(temp);
-            printf("Element deleted successfully.\n");
-        }
-    } else {
-        printf("The list is empty. Deletion is not possible.\n");
-    }
+// Function to remove an element by ID
+void remove_from_end(Node** head, int id) {
+    return;
 }
 
 // Function to print the list
 void print_list(Node* head) {
     Node* current = head;
     while (current != NULL) {
-        printf("Title: %s\n", current->book.title);
-        printf("Author: %s\n", current->book.author);
-        printf("Year Published: %d\n", current->book.yearPublished);
-        printf("Page Count: %d\n", current->book.pageCount);
-        printf("Price: %.2f\n", current->book.price);
-        printf("Rating: %.2f\n", current->book.rating);
-        printf("Reader Ages: ");
-        for (int i = 0; i < current->book.readerCount; i++) {
-            printf("%d ", current->book.readerAges[i]);
+        printf("ID: %d\n", current->building.id);
+        printf("Street: %s\n", current->building.street);
+        printf("Developer Company: %s\n", current->building.devCompany);
+        printf("Year Construction: %d\n", current->building.yearConstruction);
+        printf("Floors: %d\n", current->building.floors);
+        printf("Height: %.2f\n", current->building.height);
+        printf("Energy Efficiency coeff: %.2f\n", current->building.energyEfficiency);
+        printf("Apartments Price: ");
+        for(int i=0; i<current->building.amountApartments; i++){
+            printf("%.2f ", current->building.apartmentPrices[i]);
         }
         printf("\n\n");
         current = current->next;
@@ -109,77 +88,69 @@ void print_list(Node* head) {
 }
 
 // Function to free the memory of the list
-void free_list(Node* head) {
+void free_list(Node* head){
     Node* current = head;
     Node* temp = NULL;
-    while (current != NULL) {
+    while(current != NULL){
         temp = current;
         current = current->next;
-        free(temp->book.title);
-        free(temp->book.author);
-        free(temp->book.readerAges);
+        free(temp->building.street);
+        free(temp->building.devCompany);
+        free(temp->building.apartmentPrices);
         free(temp);
     }
 }
 
 // Function to read data from a CSV file
 void read_from_csv(Node** head) {
-    FILE* file = fopen("books.csv", "r");
+    FILE* file = fopen("database.csv", "r");
     char line[1024];
-    BOOK book;
+    Building building;
     char* token;
-    char* age_token;
-
-    if (file) {
-        while (fgets(line, sizeof(line), file)) {
+    char* price_token;
+    if(file){
+        while(fgets(line, sizeof(line), file)){
             token = strtok(line, ",");
-            book.title = (char*)malloc(strlen(token) + 1);
-            strcpy(book.title, token);
+
+            building.id = atoi(token);
+
+            building.street = (char*)malloc(strlen(token) + 1);
+            token = strtok(NULL, ",");
+            strcpy(building.street, token);
 
             token = strtok(NULL, ",");
-            book.author = (char*)malloc(strlen(token) + 1);
-            strcpy(book.author, token);
+            building.devCompany = (char*)malloc(strlen(token) + 1);
+            strcpy(building.devCompany, token);
 
-            book.yearPublished = atoi(strtok(NULL, ","));
-            book.pageCount = atoi(strtok(NULL, ","));
-            book.price = atof(strtok(NULL, ","));
-            book.rating = atof(strtok(NULL, ","));
-            book.readerCount = atoi(strtok(NULL, ","));
-            
-            book.readerAges = (int*)malloc(book.readerCount * sizeof(int));
+            building.yearConstruction = atoi(strtok(NULL, ","));
+            building.numHouse = atoi(strtok(NULL, ","));
+            building.floors = atoi(strtok(NULL, ","));
+            building.height = atof(strtok(NULL, ","));
+            building.energyEfficiency = atof(strtok(NULL, ","));
+            building.amountApartments = atoi(strtok(NULL, ","));
+
+            building.apartmentPrices = (float*)malloc(building.amountApartments * sizeof(float));
             token = strtok(NULL, "\n");
-            age_token = strtok(token, ";");
-            for (int i = 0; i < book.readerCount; i++) {
-                if (age_token != NULL) {
-                    book.readerAges[i] = atoi(age_token);
-                    age_token = strtok(NULL, ";");
+            price_token = strtok(token, ";");
+            for(int i=0; i<building.amountApartments; i++){
+                if(price_token != NULL){
+                    building.apartmentPrices[i] = atof(price_token);
+                    price_token = strtok(NULL, ";");
                 }
             }
-            
-            append(head, book);
+            append(head, building);
         }
         fclose(file);
-    } else {
-        printf("Error opening file books.csv\n");
+    }
+    else{
+        printf("Error opening file\n");
     }
 }
 
 int main() {
     Node* head = NULL;
-    int position_from_end;
-    
     read_from_csv(&head);
-    printf("Original list of books:\n");
     print_list(head);
-    
-    printf("Enter the position from the end to delete: ");
-    scanf("%d", &position_from_end);
-    
-    remove_from_end(&head, position_from_end);
-    
-    printf("\nList of books after deletion:\n");
-    print_list(head);
-    
     free_list(head);
     return 0;
 }
