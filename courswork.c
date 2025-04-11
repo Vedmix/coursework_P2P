@@ -23,7 +23,7 @@ typedef struct Node {
 }Node;
 
 // Function to create a new node
-Node* create_node(Building building) {
+Node* createNode(Building building) {
     Node* new_node = (Node*)malloc(sizeof(Node));
     int success = (new_node != NULL);
     if(success){
@@ -38,7 +38,7 @@ Node* create_node(Building building) {
 
 // Function to append a book to the end of the list
 void append(Node** head, Building building) {
-    Node* new_node = create_node(building);
+    Node* new_node = createNode(building);
     Node* current = *head;
     if(*head == NULL){
         *head = new_node;
@@ -63,12 +63,12 @@ int length(Node* head){
 }
 
 // Function to remove an element by ID
-void remove_from_end(Node** head, int id) {
+void removeElem(Node** head, int id) {
     return;
 }
 
 // Function to print the list
-void print_list(Node* head) {
+void printList(Node* head) {
     Node* current = head;
     while (current != NULL) {
         printf("ID: %d\n", current->building.id);
@@ -78,6 +78,7 @@ void print_list(Node* head) {
         printf("Floors: %d\n", current->building.floors);
         printf("Height: %.2f\n", current->building.height);
         printf("Energy Efficiency coeff: %.2f\n", current->building.energyEfficiency);
+        printf("Amount of apartments for sale: %d\n", current->building.amountApartments);
         printf("Apartments Price: ");
         for(int i=0; i<current->building.amountApartments; i++){
             printf("%.2f ", current->building.apartmentPrices[i]);
@@ -88,7 +89,7 @@ void print_list(Node* head) {
 }
 
 // Function to free the memory of the list
-void free_list(Node* head){
+void freeList(Node* head){
     Node* current = head;
     Node* temp = NULL;
     while(current != NULL){
@@ -102,7 +103,7 @@ void free_list(Node* head){
 }
 
 // Function to read data from a CSV file
-void read_from_csv(Node** head) {
+void readFromCSV(Node** head) {
     FILE* file = fopen("database.csv", "r");
     char line[1024];
     Building building;
@@ -147,10 +148,29 @@ void read_from_csv(Node** head) {
     }
 }
 
+void outputToCSV(Node* head){
+    FILE* file = fopen("database.csv", "w");
+    Node* curr = head;
+    while(curr!=NULL){
+        fprintf(file, "%d,", curr->building.id);
+        fprintf(file, "%s,%s,", curr->building.street, curr->building.devCompany);
+        fprintf(file, "%d,%d,%d,", curr->building.yearConstruction, curr->building.numHouse, curr->building.floors);
+        fprintf(file, "%.2f,%.2f,", curr->building.height, curr->building.energyEfficiency);
+        fprintf(file, "%d,", curr->building.amountApartments);
+        for(int i=0;i<curr->building.amountApartments;i++){
+            fprintf(file, "%.2f;", curr->building.apartmentPrices[i]);
+        }
+        fprintf(file, "\n");
+        curr=curr->next;
+    }
+    fclose(file);
+}
+
 int main() {
     Node* head = NULL;
-    read_from_csv(&head);
-    print_list(head);
-    free_list(head);
+    readFromCSV(&head);
+    printList(head);
+    outputToCSV(head);
+    freeList(head);
     return 0;
 }
